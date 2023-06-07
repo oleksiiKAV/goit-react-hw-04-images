@@ -2,6 +2,8 @@ import './Searchbar.css';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
+import Notiflix from 'notiflix';
+
 import { ImSearch } from 'react-icons/im';
 
 const Searchbar = ({ onSubmit }) => {
@@ -13,6 +15,12 @@ const Searchbar = ({ onSubmit }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
+
+    if (inputData.trim() === '') {
+      Notiflix.Notify.info('You cannot search by empty field, try again.');
+      return;
+    } 
+
     onSubmit(inputData);
     setInputData('');
   };
@@ -40,6 +48,6 @@ const Searchbar = ({ onSubmit }) => {
 };
 
 export default Searchbar;
-Searchbar.propType = {
+Searchbar.propTypes = {
   onSubmit: PropTypes.func.isRequired,
 };
