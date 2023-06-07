@@ -7,27 +7,21 @@ import Searchbar from './Searchbar';
 import Notiflix from 'notiflix';
 import Loader from './Loader';
 
-let page = 1;
+//let page = 1;
 
 const App = () => {
   const [inputData, setInputData] = useState('');
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('idle');
   const [totalHits, setTotalHits] = useState(0);
-  // state = {
-  //   inputData: '',
-  //   items: [],
-
-  //   status: 'idle',
-  //   totalHits: 0,
-  // };
+  const[page, setPage] =useState(1)
 
   const handleSubmit = async inputData => {
-    page = 1;
-    if (inputData.trim() === '') {
-      Notiflix.Notify.info('You cannot search by empty field, try again.');
-      return;
-    } else {
+    setPage(1);
+    // if (inputData.trim() === '') {
+    //   Notiflix.Notify.info('You cannot search by empty field, try again.');
+    //   return;
+    // } else {
       try {
         setStatus('pending');
         const { totalHits, hits } = await fetchImages(inputData, page);
@@ -45,13 +39,13 @@ const App = () => {
       } catch (error) {
         setStatus('rejected');
       }
-    }
+    // }
   };
   const onNextPage = async () => {
     setStatus('pending');
 
     try {
-      const { hits } = await fetchImages(inputData, (page += 1));
+      const { hits } = await fetchImages(inputData, (setPage(page +1)));
       setItems(prevState => [...prevState, ...hits]);
       setStatus('resolved');
     } catch (error) {
