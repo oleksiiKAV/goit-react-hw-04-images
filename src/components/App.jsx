@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import ImageGallery from './ImageGallery';
 import './App.css';
@@ -7,50 +7,49 @@ import Searchbar from './Searchbar';
 import Notiflix from 'notiflix';
 import Loader from './Loader';
 
-//let page = 1;
-
 const App = () => {
   const [inputData, setInputData] = useState('');
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('idle');
   const [totalHits, setTotalHits] = useState(0);
-  const[page, setPage] =useState(1)
+  const [page, setPage] = useState(1);
 
-  const handleSubmit = async inputData => {
-    setPage(1);
-    // if (inputData.trim() === '') {
-    //   Notiflix.Notify.info('You cannot search by empty field, try again.');
-    //   return;
-    // } else {
+  useEffect(() => {
+    const fetchImagesData = async () => {
+      if (inputData.trim() === '') {
+        setStatus('idle');
+        return;
+      }
+
       try {
         setStatus('pending');
         const { totalHits, hits } = await fetchImages(inputData, page);
         if (hits.length < 1) {
-          setStatus('idle');
+          setStatus('rejected');
           Notiflix.Notify.failure(
             'Sorry, there are no images matching your search query. Please try again.'
           );
         } else {
-          setItems(hits);
-          setInputData(inputData);
+          setItems(prevItems => [...prevItems, ...hits]);
           setTotalHits(totalHits);
           setStatus('resolved');
         }
       } catch (error) {
         setStatus('rejected');
       }
-    // }
-  };
-  const onNextPage = async () => {
-    setStatus('pending');
+    };
 
-    try {
-      const { hits } = await fetchImages(inputData, (setPage(page +1)));
-      setItems(prevState => [...prevState, ...hits]);
-      setStatus('resolved');
-    } catch (error) {
-      setStatus('rejected');
-    }
+    fetchImagesData();
+  }, [inputData, page]);
+
+  const handleSubmit = inputData => {
+    setItems([]);
+    setPage(1);
+    setInputData(inputData);
+  };
+
+  const onNextPage = async () => {
+    setPage(prevPage => prevPage + 1);
   };
 
   if (status === 'idle') {
@@ -60,6 +59,7 @@ const App = () => {
       </div>
     );
   }
+
   if (status === 'pending') {
     return (
       <div className="App">
@@ -70,14 +70,16 @@ const App = () => {
       </div>
     );
   }
+
   if (status === 'rejected') {
     return (
       <div className="App">
         <Searchbar onSubmit={handleSubmit} />
-        <p>Something wrong, try later</p>
+        <p>Something went wrong. Please try again later.</p>
       </div>
     );
   }
+
   if (status === 'resolved') {
     return (
       <div className="App">
